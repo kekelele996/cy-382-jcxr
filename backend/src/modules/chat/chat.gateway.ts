@@ -1,5 +1,5 @@
-import { MessageBody, SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
-import { Server } from 'socket.io';
+import { ConnectedSocket, MessageBody, SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
+import { Server, Socket } from 'socket.io';
 
 @WebSocketGateway({ cors: true, path: '/socket.io' })
 export class ChatGateway {
@@ -9,7 +9,8 @@ export class ChatGateway {
     this.server.to(`trip-${body.tripId}`).emit('trip-message', { ...body, sentAt: new Date().toISOString() });
   }
   @SubscribeMessage('join-trip')
-  join(@MessageBody() body: { tripId: number }) {
+  join(@ConnectedSocket() socket: Socket, @MessageBody() body: { tripId: number }) {
+    socket.join(`trip-${body.tripId}`);
     return { room: `trip-${body.tripId}` };
   }
 }
